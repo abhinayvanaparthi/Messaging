@@ -1,1 +1,13 @@
 This is my first fullstack project based on messaging others.
+
+2 folders frontend and backend 
+under backend first node js is installed using npm init -y
+then npm install express mongoose dotenv socket.io cors for 
+express: To create backend APIs.
+mongoose: To connect Node → MongoDB.
+dotenv: To store secrets (DB URL, passwords) safely.
+socket.io: For real-time messaging.
+cors: To allow frontend and backend to communicate.
+
+next creating the index.js file, theen in package.json changing scripts for allowing npm run dev,
+installing nodemon with npm install nodemon --save-dev
