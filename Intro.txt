@@ -15,3 +15,112 @@ installing nodemon with npm install nodemon --save-dev
 created a mongodb account and created new cluster with user access and ip access then pawsted the url for accessing the db in .env. 
 
 now npm install bcryptjs jsonwebtoken for json web token.
+
+adding login api.
+
+created a new protected api route which verifys jwt and then decrypts the userid and includes it in the request using the middleware.
+
+created another api for searching users, also uses middleware function for safty.
+
+Added apis for checking the conversation between users and ability to create conversation with other users.
+
+Frontend → Route → Middleware → Controller → Database → Response
+🔹 routes → Entry point for requests
+
+This is where the request first reaches.
+
+Example: router.post("/login", loginUser);
+
+This means: If a request comes to /login, call loginUser.
+
+So this file is just a map of URLs to functions.
+
+It does not contain business logic.
+
+🔹 middleware → Security or pre-processing
+
+This runs before controller.
+
+Example: router.get("/", protect, searchUsers);
+
+Here: protect runs first.
+
+Its job: Check token, Verify user, Attach user info., This keeps your controller clean.
+
+🔹 controllers → Main logic (brain)
+
+This is where the real work happens.
+
+Example: exports.loginUser = async (req, res) => { ... }
+
+This:
+✔ Reads request
+✔ Checks database
+✔ Executes logic
+✔ Sends response.
+
+🔹 models → Database blueprint
+
+These define:
+👉 How data is stored.
+
+Example: const User = mongoose.model("User", schema);
+
+This ensures: Structure, Validation, Relationships.
+
+🔹 config → System setup
+
+For: DB connection, Environment setup.
+
+so far:
+
+Authentication system:
+
+Frontend → /api/auth/register
+→ Check user
+→ Hash password
+→ Save
+→ Return token.
+
+Login system:
+Frontend → /api/auth/login
+→ Verify user
+→ Compare password
+→ Return token.
+
+Protected APIs:
+
+Frontend → sends JWT
+Middleware → verifies
+Controller → executes.
+
+Search users:
+
+Frontend → search request
+Backend → query MongoDB
+Return matching users.
+
+Conversations:
+
+Frontend → create chat
+Backend → check if exists
+→ create if needed
+→ return chat.
+
+created messaging api and now we can store the messages in the db and message another user.
+now the api for fetching messages in a conversation is also created.
+
+system now supports:
+Authentication
+Authorization
+User search
+Conversations
+Sending messages
+Fetching messages
+
+✔ Messages are saved
+✔ Messages are fetched
+✔ Linked to conversation
+✔ Sorted by time
+✔ JWT security working
+✔ MongoDB structure correct
