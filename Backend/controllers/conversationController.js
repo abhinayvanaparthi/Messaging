@@ -24,3 +24,33 @@ exports.createOrGetConversation = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+exports.getUserConversations = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const conversations = await Conversation.find({
+      participants: userId,
+    })
+      .populate("participants", "name email")
+      .sort({ updatedAt: -1 });
+
+    const conversationsWithUnread = await Promise.all(
+      conversations.map(async (conversation) => {
+        const unreadCount = await Message.countDocuments({
+          conversation: conversation._id,
+          readBy: { $ne: userId },
+        });
+
+        return {
+          ...conversation.toObject(),
+          unreadCount,
+        };
+      })
+    );
+
+    res.json(conversationsWithUnread);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

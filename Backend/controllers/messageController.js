@@ -13,6 +13,7 @@ exports.sendMessage = async (req, res) => {
       conversation: conversationId,
       sender,
       content,
+      readBy: [sender],
     });
 
     // find conversation
@@ -36,9 +37,26 @@ exports.sendMessage = async (req, res) => {
 
     if (receiverSocketId) {
       io.to(receiverSocketId).emit("newMessage", message);
+      message.status = "delivered";
+      await message.save();
     }
 
     res.status(201).json(message);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.markMessagesAsRead = async (req, res) => {
+  try {
+    const { conversationId } = req.params;
+
+    await Message.updateMany(
+      { conversation: conversationId, status: { $ne: "read" } },
+      { status: "read" }
+    );
+
+    res.json({ message: "Messages marked as read" });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -49,11 +67,17 @@ exports.getMessages = async (req, res) => {
   try {
     const { conversationId } = req.params;
 
-    const messages = await Message.find({
-      conversation: conversationId,
-    }).sort({ createdAt: 1 });
+    const page = parseInt(req.query.page) || 1;
+    const limit = 20;
 
-    res.json(messages);
+     const messages = await Message.find({
+      conversation: conversationId,
+    })
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit);
+
+    res.json(messages.reverse());
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

@@ -126,3 +126,30 @@ Fetching messages
 ✔ MongoDB structure correct
 
 now supports socket connection and we can seend and receive messages using 2 user ids and a conversation id's
+
+instead of using the senders and receivers socket id we will use the conversation id so when multiple users are a part of a group then it will be handled automatically instead of finding receiver then socket then emit.
+
+when user is online we emit the onlien users array and when disconnected  also, so frontend can know online and offline status.
+
+we also limit the number of messages fetched in a conversation so the ui wont be slow.
+
+backend now supports:
+✔ authentication
+✔ JWT security
+✔ user search
+✔ conversations
+✔ messages
+✔ pagination
+✔ real-time sockets
+✔ online users
+✔ delivery status
+✔ read receipts
+
+now when a user is typing we emit "typing" to all the users in that conversation so it shows user a is typing.
+✅ typing indicators
+✅ conversation list
+✅ pagination
+✅ read receipts
+✅ unread message counts
+
+

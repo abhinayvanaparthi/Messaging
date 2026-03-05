@@ -52,6 +52,20 @@ io.on("connection", (socket) => {
   socket.on("join", (userId) => {
     onlineUsers.set(userId, socket.id);
     console.log("User joined:", userId);
+    io.emit("onlineUsers", Array.from(onlineUsers.keys()));
+  });
+
+  socket.on("joinConversation", (conversationId) => {
+    socket.join(conversationId);
+    console.log(`Socket ${socket.id} joined conversation ${conversationId}`);
+  });
+
+  socket.on("typing", ({ conversationId, userId }) => {
+    socket.to(conversationId).emit("typing", { userId });
+  });
+
+  socket.on("stopTyping", ({ conversationId, userId }) => {
+    socket.to(conversationId).emit("stopTyping", { userId });
   });
 
   socket.on("disconnect", () => {
@@ -62,6 +76,7 @@ io.on("connection", (socket) => {
       }
     }
     console.log("User disconnected:", socket.id);
+    io.emit("onlineUsers", Array.from(onlineUsers.keys()));
   });
 });
 
