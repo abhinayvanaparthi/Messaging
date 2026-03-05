@@ -28,6 +28,43 @@ app.get("/api/test", protect, (req, res) => {
   });
 });
 
-app.listen(PORT, () => {
+const http = require("http");
+const { Server } = require("socket.io");
+
+const server = http.createServer(app);
+
+const io = new Server(server, {
+  cors: {
+    origin: "*",
+  },
+});
+const onlineUsers = new Map();
+app.set("io", io);           // allows controllers to access socket.io
+app.set("onlineUsers", onlineUsers); // allows controllers to access online users
+
+// Basic socket connection
+
+
+io.on("connection", (socket) => {
+  console.log("User connected:", socket.id);
+
+  // When user sends their ID after connecting
+  socket.on("join", (userId) => {
+    onlineUsers.set(userId, socket.id);
+    console.log("User joined:", userId);
+  });
+
+  socket.on("disconnect", () => {
+    for (let [userId, sockId] of onlineUsers.entries()) {
+      if (sockId === socket.id) {
+        onlineUsers.delete(userId);
+        break;
+      }
+    }
+    console.log("User disconnected:", socket.id);
+  });
+});
+
+server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });

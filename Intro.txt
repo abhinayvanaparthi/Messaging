@@ -124,3 +124,5 @@ Fetching messages
 ✔ Sorted by time
 ✔ JWT security working
 ✔ MongoDB structure correct
+
+now supports socket connection and we can seend and receive messages using 2 user ids and a conversation id's

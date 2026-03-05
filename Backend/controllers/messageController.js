@@ -15,10 +15,28 @@ exports.sendMessage = async (req, res) => {
       content,
     });
 
+    // find conversation
+    const conversation = await Conversation.findById(conversationId);
+
     // Update last message in conversation
     await Conversation.findByIdAndUpdate(conversationId, {
       lastMessage: content,
     });
+
+    // --- Real-time emit ---
+    const io = req.app.get("io");
+    const onlineUsers = req.app.get("onlineUsers");
+
+    // find receiver (other participant)
+    const receiverId = conversation.participants.find(
+      (p) => p.toString() !== sender
+    );
+
+    const receiverSocketId = onlineUsers.get(receiverId?.toString());
+
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("newMessage", message);
+    }
 
     res.status(201).json(message);
   } catch (error) {
