@@ -82,3 +82,98 @@ exports.getMessages = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+exports.editMessage = async (req, res) => {
+  try {
+    const { messageId } = req.params;
+    const { content } = req.body;
+
+    const message = await Message.findById(messageId);
+
+    if (!message) {
+      return res.status(404).json({ message: "Message not found" });
+    }
+
+    // only sender can edit
+    if (message.sender.toString() !== req.user.id) {
+      return res.status(403).json({ message: "Not authorized to edit this message" });
+    }
+
+    message.content = content;
+    await message.save();
+
+    res.json(message);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.deleteMessage = async (req, res) => {
+  try {
+    const { messageId } = req.params;
+
+    const message = await Message.findById(messageId);
+
+    if (!message) {
+      return res.status(404).json({ message: "Message not found" });
+    }
+
+    // only sender can delete
+    if (message.sender.toString() !== req.user.id) {
+      return res.status(403).json({ message: "Not authorized to delete this message" });
+    }
+
+    await message.deleteOne();
+
+    res.json({ message: "Message deleted" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.reactToMessage = async (req, res) => {
+  try {
+    const { messageId } = req.params;
+    const { emoji } = req.body;
+    const userId = req.user.id;
+
+    const message = await Message.findById(messageId);
+
+    if (!message) {
+      return res.status(404).json({ message: "Message not found" });
+    }
+
+    // find if emoji reaction already exists
+    const reaction = message.reactions.find((r) => r.emoji === emoji);
+
+    if (reaction) {
+      const userIndex = reaction.users.indexOf(userId);
+
+      if (userIndex > -1) {
+        // user already reacted → remove reaction
+        reaction.users.splice(userIndex, 1);
+      } else {
+        // add user reaction
+        reaction.users.push(userId);
+      }
+
+      // remove reaction object if no users left
+      if (reaction.users.length === 0) {
+        message.reactions = message.reactions.filter((r) => r.emoji !== emoji);
+      }
+
+    } else {
+      // create new emoji reaction
+      message.reactions.push({
+        emoji,
+        users: [userId],
+      });
+    }
+
+    await message.save();
+
+    res.json(message);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

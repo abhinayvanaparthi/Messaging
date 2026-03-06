@@ -13,6 +13,7 @@ const messageRoutes = require("./routes/messageRoutes");
 connectDB();
 
 app.use(express.json());
+app.use("/uploads", express.static("uploads"));
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/conversations", conversationRoutes);
@@ -32,6 +33,7 @@ const http = require("http");
 const { Server } = require("socket.io");
 
 const server = http.createServer(app);
+const typingUsers = new Map();
 
 const io = new Server(server, {
   cors: {
@@ -49,9 +51,15 @@ io.on("connection", (socket) => {
   console.log("User connected:", socket.id);
 
   // When user sends their ID after connecting
-  socket.on("join", (userId) => {
+  socket.on("join", async (userId) => {
     onlineUsers.set(userId, socket.id);
+
+    await User.findByIdAndUpdate(userId, {
+      isOnline: true,
+    });
+
     console.log("User joined:", userId);
+
     io.emit("onlineUsers", Array.from(onlineUsers.keys()));
   });
 
@@ -62,20 +70,37 @@ io.on("connection", (socket) => {
 
   socket.on("typing", ({ conversationId, userId }) => {
     socket.to(conversationId).emit("typing", { userId });
+
+    // reset typing timer
+    if (typingUsers.has(userId)) {
+      clearTimeout(typingUsers.get(userId));
+    }
+
+    const timeout = setTimeout(() => {
+      socket.to(conversationId).emit("stopTyping", { userId });
+      typingUsers.delete(userId);
+    }, 2000);
+
+    typingUsers.set(userId, timeout);
   });
 
-  socket.on("stopTyping", ({ conversationId, userId }) => {
-    socket.to(conversationId).emit("stopTyping", { userId });
-  });
-
-  socket.on("disconnect", () => {
+  socket.on("disconnect", async () => {
     for (let [userId, sockId] of onlineUsers.entries()) {
       if (sockId === socket.id) {
+
         onlineUsers.delete(userId);
+
+        await User.findByIdAndUpdate(userId, {
+          isOnline: false,
+          lastSeen: new Date(),
+        });
+
         break;
       }
     }
+
     console.log("User disconnected:", socket.id);
+
     io.emit("onlineUsers", Array.from(onlineUsers.keys()));
   });
 });

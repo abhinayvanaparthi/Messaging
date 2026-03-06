@@ -152,4 +152,7 @@ now when a user is typing we emit "typing" to all the users in that conversation
 ✅ read receipts
 ✅ unread message counts
 
+now we can edit and delete messages
+message reaction, typing timeout and last seens functionality is added now
 
+using multer for handling uploads.
