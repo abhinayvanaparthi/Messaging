@@ -156,3 +156,6 @@ now we can edit and delete messages
 message reaction, typing timeout and last seens functionality is added now
 
 using multer for handling uploads.
+
+creating group , adding members, deleting members , admins, leave group, rename group, change group admin are now possible.
+adding rate limit using express rate limit

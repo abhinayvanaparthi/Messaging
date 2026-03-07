@@ -38,6 +38,12 @@ const messageSchema = new mongoose.Schema(
         ],
       },
     ],
+    fileUrl: {
+      type: String,
+    },
+    fileType: {
+      type: String,
+    },
   },
   { timestamps: true }
 );

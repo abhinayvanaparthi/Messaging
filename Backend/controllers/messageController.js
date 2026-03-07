@@ -177,3 +177,33 @@ exports.reactToMessage = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+exports.sendFileMessage = async (req, res) => {
+  try {
+    const { conversationId } = req.body;
+    const sender = req.user.id;
+
+    if (!req.file) {
+      return res.status(400).json({ message: "No file uploaded" });
+    }
+
+    const message = await Message.create({
+      conversation: conversationId,
+      sender,
+      fileUrl: `/uploads/${req.file.filename}`,
+      fileType: req.file.mimetype,
+      readBy: [sender],
+    });
+
+    const conversation = await Conversation.findById(conversationId);
+
+    const io = req.app.get("io");
+
+    io.to(conversationId).emit("newMessage", message);
+
+    res.status(201).json(message);
+
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
