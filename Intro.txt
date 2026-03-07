@@ -159,3 +159,30 @@ using multer for handling uploads.
 
 creating group , adding members, deleting members , admins, leave group, rename group, change group admin are now possible.
 adding rate limit using express rate limit
+
+done:
+Auth (JWT)
+
+Conversations
+
+Real-time messaging
+
+Pagination
+
+Search
+
+File uploads
+
+Reactions
+
+Typing indicators
+
+Presence
+
+Group chats
+
+Admin controls
+
+Rate limiting
+
+Encryption

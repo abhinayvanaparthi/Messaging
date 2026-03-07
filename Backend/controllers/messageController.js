@@ -1,5 +1,6 @@
 const Message = require("../models/Message");
 const Conversation = require("../models/Conversation");
+const { encryptMessage, decryptMessage } = require("../utils/encryption");
 
 // Send message
 exports.sendMessage = async (req, res) => {
@@ -12,7 +13,7 @@ exports.sendMessage = async (req, res) => {
     const message = await Message.create({
       conversation: conversationId,
       sender,
-      content,
+      content: encryptMessage(content),
       readBy: [sender],
     });
 
@@ -68,16 +69,26 @@ exports.getMessages = async (req, res) => {
     const { conversationId } = req.params;
 
     const page = parseInt(req.query.page) || 1;
+
+    console.log('==================', page);
+    
+    
     const limit = 20;
 
-     const messages = await Message.find({
+    const messages = await Message.find({
       conversation: conversationId,
     })
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(limit);
 
-    res.json(messages.reverse());
+    // decrypt messages
+    const decryptedMessages = messages.map((msg) => ({
+      ...msg.toObject(),
+      content: decryptMessage(msg.content),
+    }));
+
+    res.json(decryptedMessages.reverse());
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -231,6 +242,11 @@ exports.searchMessages = async (req, res) => {
     })
       .sort({ createdAt: -1 })
       .limit(50);
+
+    const decryptedMessages = messages.map((msg) => ({
+      ...msg.toObject(),
+      content: decryptMessage(decryptedMessages)
+    }));
 
     res.json(messages);
 
