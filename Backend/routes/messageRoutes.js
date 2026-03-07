@@ -1,5 +1,5 @@
 const express = require("express");
-const { sendMessage, getMessages, markMessagesAsRead, editMessage, deleteMessage, reactToMessage, sendFileMessage } = require("../controllers/messageController");
+const { sendMessage, getMessages, markMessagesAsRead, editMessage, deleteMessage, reactToMessage, sendFileMessage, searchMessages } = require("../controllers/messageController");
 const protect = require("../middleware/authMiddleware");
 const upload = require("../config/multer");
 
@@ -15,5 +15,6 @@ router.put("/edit/:messageId", protect, editMessage);
 router.delete("/delete/:messageId", protect, deleteMessage);
 router.post("/react/:messageId", protect, reactToMessage);
 router.post("/file", protect, upload.single("file"), sendFileMessage);
+router.get("/search/:conversationId", protect, searchMessages);
 
 module.exports = router;

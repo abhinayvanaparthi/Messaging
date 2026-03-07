@@ -207,3 +207,35 @@ exports.sendFileMessage = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+exports.searchMessages = async (req, res) => {
+  try {
+    const { conversationId } = req.params;
+    const { query } = req.query;
+    const userId = req.user.id;
+
+    const conversation = await Conversation.findById(conversationId);
+
+    if (!conversation) {
+      return res.status(404).json({ message: "Conversation not found" });
+    }
+
+    // security check: user must be participant
+    if (!conversation.participants.includes(userId)) {
+      return res.status(403).json({ message: "Access denied" });
+    }
+
+    const messages = await Message.find({
+      conversation: conversationId,
+      content: { $regex: query, $options: "i" }
+    })
+      .sort({ createdAt: -1 })
+      .limit(50);
+
+    res.json(messages);
+
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+

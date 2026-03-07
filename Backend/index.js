@@ -1,6 +1,7 @@
 require("dotenv").config();
 const express = require("express");
 const connectDB = require("./config/db");
+const apiLimiter = require("./middleware/rateLimiter");
 const userRoutes = require("./routes/userRoutes");
 
 const app = express();
@@ -13,6 +14,7 @@ const messageRoutes = require("./routes/messageRoutes");
 connectDB();
 
 app.use(express.json());
+app.use("/api", apiLimiter);
 app.use("/uploads", express.static("uploads"));
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
