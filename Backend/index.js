@@ -1,5 +1,6 @@
 require("dotenv").config();
 const express = require("express");
+const cors = require("cors");
 const connectDB = require("./config/db");
 const apiLimiter = require("./middleware/rateLimiter");
 const userRoutes = require("./routes/userRoutes");
@@ -12,7 +13,9 @@ const conversationRoutes = require("./routes/conversationRoutes");
 const messageRoutes = require("./routes/messageRoutes");
 
 connectDB();
-
+app.use(cors({
+    origin: "http://localhost:5173"
+  }));
 app.use(express.json());
 app.use("/api", apiLimiter);
 app.use("/uploads", express.static("uploads"));
