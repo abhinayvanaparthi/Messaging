@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { encryptMessage } = require("../utils/encryption");
 
 const messageSchema = new mongoose.Schema(
   {
@@ -15,6 +16,9 @@ const messageSchema = new mongoose.Schema(
     content: {
       type: String,
       required: true,
+    },
+    contentsearch: {
+      type: String
     },
     status: {
       type: String,
@@ -47,5 +51,22 @@ const messageSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+messageSchema.pre("save", function (next) {
+
+  if (this.isModified("content") && this.content) {
+
+    // store searchable version
+    this.contentSearch = this.content.toLowerCase();
+
+    // encrypt stored message
+    this.content = encryptMessage(this.content);
+  }
+
+  next();
+});
+
+messageSchema.index({ conversation: 1, createdAt: -1 });
+messageSchema.index({ contentSearch: 1 });
 
 module.exports = mongoose.model("Message", messageSchema);

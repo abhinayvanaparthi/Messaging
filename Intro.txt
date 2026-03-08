@@ -186,3 +186,24 @@ Admin controls
 Rate limiting
 
 Encryption
+
+
+The backend supports:
+
+- User registration & login (JWT)
+- User search
+- 1-to-1 conversations
+- Group conversations
+- Sending messages
+- File/image messages
+- Message reactions
+- Message edit/delete
+- Typing indicators
+- Online presence / last seen
+- Message pagination
+- Message search
+- Message encryption (stored encrypted in DB)
+- Rate limiting
+- MongoDB indexing
+- Real-time messaging using Socket.io
+
