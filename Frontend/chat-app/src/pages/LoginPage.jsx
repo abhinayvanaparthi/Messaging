@@ -1,18 +1,24 @@
-import { useState } from "react";
 import { loginUser } from "../services/authService";
+import { TextInput, PasswordInput, Button, Stack, Card, Title } from '@mantine/core';
+import { useForm } from '@mantine/form';
 
 function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const form = useForm({
+    initialValues: {
+      email: '',
+      password: '',
+    },
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
+    validate: {
+      email: (value) => (/^\S+@\S+$/.test(value) ? null : 'Invalid email'),
+      password: (value) => (value.length >= 1 ? null : 'Password required'),
+    },
+  });
 
+  const handleLogin = async (values) => {
     try {
-      const data = await loginUser({ email, password });
-
+      const data = await loginUser(values);
       localStorage.setItem("token", data.token);
-
       alert("Login successful!");
     } catch (error) {
       console.error(error);
@@ -21,36 +27,34 @@ function LoginPage() {
   };
 
   return (
-    <div className="h-screen flex items-center justify-center bg-gray-100">
-      <form
-        onSubmit={handleLogin}
-        className="bg-white p-8 rounded-lg shadow-md w-96"
-      >
-        <h2 className="text-2xl font-bold mb-6 text-center">Login</h2>
+    <div className="h-screen flex items-center justify-center bg-gray-100 flex-col gap-7">
+      <h1 className="text-3xl font-bold font-serif">Project Messaging</h1>
 
-        <input
-          type="email"
-          placeholder="Email"
-          className="w-full p-2 mb-4 border rounded"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-
-        <input
-          type="password"
-          placeholder="Password"
-          className="w-full p-2 mb-4 border rounded"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-
-        <button
-          type="submit"
-          className="w-full bg-blue-500 text-white p-2 rounded"
-        >
+      <Card withBorder shadow="md" className="w-96">
+        <Title order={2} align="center" mb="lg">
           Login
-        </button>
-      </form>
+        </Title>
+
+        <form onSubmit={form.onSubmit(handleLogin)}>
+          <Stack>
+            <TextInput
+              label="Email"
+              placeholder="your@email.com"
+              {...form.getInputProps('email')}
+            />
+
+            <PasswordInput
+              label="Password"
+              placeholder="Enter password"
+              {...form.getInputProps('password')}
+            />
+
+            <Button type="submit" fullWidth>
+              Login
+            </Button>
+          </Stack>
+        </form>
+      </Card>
     </div>
   );
 }
