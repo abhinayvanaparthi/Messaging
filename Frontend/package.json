@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "@mantine/core": "^8.3.16",
+    "@mantine/hooks": "^8.3.16",
+    "axios": "^1.13.6",
+    "socket.io-client": "^4.8.3"
+  }
+}
