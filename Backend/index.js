@@ -4,6 +4,7 @@ const cors = require("cors");
 const connectDB = require("./config/db");
 const apiLimiter = require("./middleware/rateLimiter");
 const userRoutes = require("./routes/userRoutes");
+const User = require("./models/User");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -14,7 +15,7 @@ const messageRoutes = require("./routes/messageRoutes");
 
 connectDB();
 app.use(cors({
-    origin: "http://localhost:5173"
+    origin: "http://localhost:3000"
   }));
 app.use(express.json());
 app.use("/api", apiLimiter);
@@ -42,8 +43,9 @@ const typingUsers = new Map();
 
 const io = new Server(server, {
   cors: {
-    origin: "*",
-  },
+    origin: "http://localhost:3000",
+    methods: ["GET", "POST"]
+  }
 });
 const onlineUsers = new Map();
 app.set("io", io);           // allows controllers to access socket.io

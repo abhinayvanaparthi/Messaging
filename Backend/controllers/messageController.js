@@ -1,24 +1,36 @@
 const Message = require("../models/Message");
 const Conversation = require("../models/Conversation");
-const { encryptMessage, decryptMessage } = require("../utils/encryption");
+const { decryptMessage } = require("../utils/encryption");
 
 // Send message
 exports.sendMessage = async (req, res) => {
   try {
     const { conversationId, content } = req.body;
 
+    console.log("=== Send Message Debug ===");
+    console.log("conversationId:", conversationId);
+    console.log("content:", content);
+    console.log("sender (req.user.id):", req.user?.id);
+
     const sender = req.user.id;
+
+    // Validate conversation exists
+    const conversation = await Conversation.findById(conversationId);
+    if (!conversation) {
+      return res.status(404).json({ message: "Conversation not found" });
+    }
+
+
 
     // Create message
     const message = await Message.create({
       conversation: conversationId,
       sender,
-      content: encryptMessage(content),
+      content,
       readBy: [sender],
     });
 
-    // find conversation
-    const conversation = await Conversation.findById(conversationId);
+    console.log("Message created:", message._id);
 
     // Update last message in conversation
     await Conversation.findByIdAndUpdate(conversationId, {
@@ -36,14 +48,24 @@ exports.sendMessage = async (req, res) => {
 
     const receiverSocketId = onlineUsers.get(receiverId?.toString());
 
+    // Build response with decrypted content
+    const responseMessage = {
+      ...message.toObject(),
+      content: decryptMessage(message.content),
+    };
+
     if (receiverSocketId) {
-      io.to(receiverSocketId).emit("newMessage", message);
+      io.to(receiverSocketId).emit("newMessage", responseMessage);
       message.status = "delivered";
       await message.save();
     }
 
-    res.status(201).json(message);
+    res.status(201).json(responseMessage);
   } catch (error) {
+    console.error("=== Send Message Error ===");
+    console.error("Error name:", error.name);
+    console.error("Error message:", error.message);
+    console.error("Error stack:", error.stack);
     res.status(500).json({ message: error.message });
   }
 };
@@ -245,10 +267,10 @@ exports.searchMessages = async (req, res) => {
 
     const decryptedMessages = messages.map((msg) => ({
       ...msg.toObject(),
-      content: decryptMessage(decryptedMessages)
+      content: decryptMessage(msg.content)
     }));
 
-    res.json(messages);
+    res.json(decryptedMessages);
 
   } catch (error) {
     res.status(500).json({ message: error.message });

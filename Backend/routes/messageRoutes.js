@@ -6,7 +6,11 @@ const upload = require("../config/multer");
 const router = express.Router();
 
 // Send message (protected)
-router.post("/", protect, sendMessage);
+router.post("/", protect, (req, res, next) => {
+  console.log("=== Message Route ===");
+  console.log("Body:", req.body);
+  next();
+}, sendMessage);
 
 // Get messages of a conversation
 router.get("/:conversationId", protect, getMessages);

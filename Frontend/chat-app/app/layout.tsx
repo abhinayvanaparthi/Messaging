@@ -1,5 +1,6 @@
 import { AuthProvider } from "../context/AuthContext";
-
+import { ChatProvider } from "../context/ChatContext";
+import { MantineProvider } from "@mantine/core";
 export default function RootLayout({
   children,
 }: {
@@ -8,9 +9,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <AuthProvider>
-          {children}
-        </AuthProvider>
+         <MantineProvider>
+          <AuthProvider>
+            <ChatProvider>
+              {children}
+            </ChatProvider>
+          </AuthProvider>
+         </MantineProvider>
       </body>
     </html>
   );

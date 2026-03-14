@@ -3,7 +3,9 @@ import { io, Socket } from "socket.io-client";
 let socket: Socket;
 
 export const connectSocket = (userId: string) => {
-  socket = io("http://localhost:5000");
+  socket = io("http://localhost:5000", {
+    transports: ["websocket"],
+  });
 
   socket.emit("join", userId);
 
