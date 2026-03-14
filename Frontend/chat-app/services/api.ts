@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_BACKEND_URL + "/api",
+  baseURL: process.env.NEXT_PUBLIC_BACKEND_URL,
 });
 
 // attach token automatically
