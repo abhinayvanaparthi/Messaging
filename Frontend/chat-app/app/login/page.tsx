@@ -5,7 +5,16 @@ import { useAuth } from "../../context/AuthContext";
 import { useRouter } from "next/navigation";
 import CommonLink from "../../components/CommonLink";
 
-import { TextInput, PasswordInput, Button, Paper, Title, Stack, Text, Alert } from "@mantine/core";
+import {
+  TextField,
+  Button,
+  Paper,
+  Typography,
+  Stack,
+  Alert,
+  AlertTitle,
+  CircularProgress,
+} from "@mui/material";
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -31,7 +40,6 @@ export default function LoginPage() {
       router.push("/chat");
     } catch (err: any) {
       console.error("Login failed", err);
-      // Extract error message
       const errorMessage = err.response?.data?.message || err.message || "Invalid credentials. Please try again.";
       setError(errorMessage);
     } finally {
@@ -41,45 +49,55 @@ export default function LoginPage() {
 
   return (
     <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
-      <Paper shadow="md" p="xl" w={400}>
-        <Stack gap="md">
-          <Title order={3} ta="center">Welcome Back</Title>
+      <Paper elevation={3} sx={{ p: 4, width: 400 }}>
+        <Stack spacing={2}>
+          <Typography variant="h5" align="center">Welcome Back</Typography>
 
           {error && (
-            <Alert color="red" title="Login Failed">
+            <Alert severity="error">
+              <AlertTitle>Login Failed</AlertTitle>
               {error}
             </Alert>
           )}
 
-          <TextInput
+          <TextField
             label="Email"
             placeholder="Enter your email"
             value={email}
-            onChange={(e) => setEmail(e.currentTarget.value)}
+            onChange={(e) => setEmail(e.target.value)}
             required
             disabled={loading}
             type="email"
+            fullWidth
           />
 
-          <PasswordInput
+          <TextField
             label="Password"
             placeholder="Enter your password"
             value={password}
-            onChange={(e) => setPassword(e.currentTarget.value)}
+            onChange={(e) => setPassword(e.target.value)}
             required
             disabled={loading}
+            type="password"
+            fullWidth
           />
 
-          <Button mt="md" onClick={handleLogin} loading={loading} fullWidth>
-            Login
+          <Button
+            variant="contained"
+            onClick={handleLogin}
+            disabled={loading}
+            fullWidth
+            sx={{ mt: 1 }}
+          >
+            {loading ? <CircularProgress size={24} color="inherit" /> : "Login"}
           </Button>
 
-          <Text size="sm" ta="center" mt="sm">
-            Don't have an account?{" "}
-            <CommonLink href="/register" style={{ textDecoration: "none", color: "blue" }}>
+          <Typography variant="body2" align="center" sx={{ mt: 1 }}>
+            Don&apos;t have an account?{" "}
+            <CommonLink href="/register" style={{ textDecoration: "none", color: "#1976d2" }}>
               Register here
             </CommonLink>
-          </Text>
+          </Typography>
         </Stack>
       </Paper>
     </div>

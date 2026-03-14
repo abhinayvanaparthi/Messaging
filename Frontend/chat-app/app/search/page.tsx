@@ -7,20 +7,19 @@ import { useChat } from "../../context/ChatContext";
 import { useRouter } from "next/navigation";
 import ProtectedRoute from "../../components/ProtectedRoute";
 
-import { 
-  TextInput, 
-  Button, 
-  Paper, 
-  Title, 
-  Stack, 
-  Text, 
-  Alert, 
-  Group, 
-  Avatar, 
+import {
+  TextField,
+  Button,
+  Paper,
+  Typography,
+  Stack,
+  Alert,
+  Box,
+  Avatar,
   Card,
-  Loader,
-  Center
-} from "@mantine/core";
+  CardContent,
+  CircularProgress,
+} from "@mui/material";
 
 // Define the User type based on backend User.js
 type User = {
@@ -65,13 +64,8 @@ export default function SearchUsersPage() {
   const handleStartChat = async (userId: string) => {
     try {
       setLoading(true);
-      // Create new conversation (or fetch existing one) with the backend
       const conversation = await createConversation(userId);
-      
-      // Set the active conversation in global context
       setActiveConversation(conversation);
-      
-      // Navigate to the chat window
       router.push("/chat");
     } catch (err: any) {
       console.error("Failed to start conversation", err);
@@ -84,56 +78,70 @@ export default function SearchUsersPage() {
   return (
     <ProtectedRoute>
       <div style={{ padding: "2rem", maxWidth: "600px", margin: "0 auto", height: "100vh" }}>
-        <Paper shadow="sm" p="lg" radius="md" withBorder>
-          <Stack gap="md">
-            <Title order={2}>Find Users</Title>
-            <Text c="dimmed" size="sm">Search for users by name or email to start a conversation.</Text>
+        <Paper elevation={1} sx={{ p: 3, borderRadius: 2 }}>
+          <Stack spacing={2}>
+            <Typography variant="h5">Find Users</Typography>
+            <Typography variant="body2" color="text.secondary">
+              Search for users by name or email to start a conversation.
+            </Typography>
 
             <form onSubmit={handleSearch}>
-              <Group align="flex-end">
-                <TextInput
+              <Box sx={{ display: "flex", gap: 1, alignItems: "flex-end" }}>
+                <TextField
                   placeholder="Enter name or email..."
                   value={query}
-                  onChange={(e) => setQuery(e.currentTarget.value)}
-                  style={{ flex: 1 }}
-                  size="md"
+                  onChange={(e) => setQuery(e.target.value)}
+                  sx={{ flex: 1 }}
+                  size="medium"
                   disabled={loading}
+                  fullWidth
                 />
-                <Button type="submit" size="md" loading={loading && results.length === 0}>
-                  Search
+                <Button
+                  type="submit"
+                  variant="contained"
+                  disabled={loading && results.length === 0}
+                  sx={{ height: 56 }}
+                >
+                  {loading && results.length === 0 ? <CircularProgress size={24} color="inherit" /> : "Search"}
                 </Button>
-              </Group>
+              </Box>
             </form>
 
             {error && (
-              <Alert color="blue" title="Search">
+              <Alert severity="info">
                 {error}
               </Alert>
             )}
 
-            <Stack gap="sm" mt="md">
-              {loading && results.length > 0 && <Center><Loader size="sm" /></Center>}
+            <Stack spacing={1} sx={{ mt: 2 }}>
+              {loading && results.length > 0 && (
+                <Box sx={{ display: "flex", justifyContent: "center" }}>
+                  <CircularProgress size={24} />
+                </Box>
+              )}
               
               {results.map((user) => (
-                <Card key={user._id} shadow="xs" padding="sm" radius="md" withBorder>
-                  <Group justify="space-between" wrap="nowrap">
-                    <Group wrap="nowrap">
-                      <Avatar src={user.profilePic || null} radius="xl" color="blue">
-                        {user.name.charAt(0).toUpperCase()}
-                      </Avatar>
-                      <div>
-                        <Text fw={500}>{user.name}</Text>
-                        <Text size="xs" c="dimmed">{user.email}</Text>
-                      </div>
-                    </Group>
-                    <Button 
-                      variant="light" 
-                      onClick={() => handleStartChat(user._id)}
-                      disabled={loading}
-                    >
-                      Message
-                    </Button>
-                  </Group>
+                <Card key={user._id} variant="outlined" sx={{ borderRadius: 2 }}>
+                  <CardContent sx={{ py: 1.5, px: 2, "&:last-child": { pb: 1.5 } }}>
+                    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "nowrap" }}>
+                      <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, flexWrap: "nowrap" }}>
+                        <Avatar src={user.profilePic || undefined} sx={{ bgcolor: "#1976d2" }}>
+                          {user.name.charAt(0).toUpperCase()}
+                        </Avatar>
+                        <div>
+                          <Typography fontWeight={500}>{user.name}</Typography>
+                          <Typography variant="caption" color="text.secondary">{user.email}</Typography>
+                        </div>
+                      </Box>
+                      <Button 
+                        variant="outlined" 
+                        onClick={() => handleStartChat(user._id)}
+                        disabled={loading}
+                      >
+                        Message
+                      </Button>
+                    </Box>
+                  </CardContent>
                 </Card>
               ))}
             </Stack>

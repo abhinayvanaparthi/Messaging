@@ -5,7 +5,15 @@ import { getConversations } from "../services/conversationService";
 import { useChat } from "../context/ChatContext";
 import { useAuth } from "../context/AuthContext";
 import { jwtDecode } from "jwt-decode";
-import { ScrollArea, Stack, Card, Text, Title, Group, Button, Avatar } from "@mantine/core";
+import {
+  Box,
+  Stack,
+  Card,
+  CardActionArea,
+  Typography,
+  Button,
+  Avatar,
+} from "@mui/material";
 import CommonLink from "./CommonLink";
 
 type User = {
@@ -41,19 +49,21 @@ export default function ConversationSidebar() {
 
   return (
     <div style={{ width: 320, borderRight: "1px solid #eee", height: "100vh", display: "flex", flexDirection: "column" }}>
-      <Group justify="space-between" p="md" align="center" style={{ borderBottom: "1px solid #eee" }}>
-        <Title order={4}>Chats</Title>
+      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", p: 2, borderBottom: "1px solid #eee" }}>
+        <Typography variant="h6">Chats</Typography>
         <CommonLink href="/search" style={{ textDecoration: "none" }}>
-          <Button variant="light" size="xs" radius="xl">
+          <Button variant="outlined" size="small" sx={{ borderRadius: 4 }}>
             New Chat
           </Button>
         </CommonLink>
-      </Group>
+      </Box>
 
-      <ScrollArea style={{ flex: 1 }}>
-        <Stack p="sm" gap="xs">
+      <Box sx={{ flex: 1, overflowY: "auto" }}>
+        <Stack spacing={1} sx={{ p: 1 }}>
           {conversations.length === 0 ? (
-            <Text c="dimmed" ta="center" mt="xl" size="sm">No conversations yet.</Text>
+            <Typography variant="body2" color="text.secondary" align="center" sx={{ mt: 4 }}>
+              No conversations yet.
+            </Typography>
           ) : (
             conversations.map((conv) => {
               // Filter out the current user and show the other participant
@@ -64,29 +74,33 @@ export default function ConversationSidebar() {
               return (
                 <Card
                   key={conv._id}
-                  shadow="none"
-                  padding="sm"
-                  withBorder
-                  radius="md"
-                  style={{ cursor: "pointer", transition: "background-color 0.2s" }}
-                  onClick={() => setActiveConversation(conv)}
-                  className="hover:bg-gray-50"
+                  variant="outlined"
+                  sx={{ borderRadius: 2, transition: "background-color 0.2s" }}
                 >
-                  <Group wrap="nowrap">
-                    <Avatar radius="xl" color="blue">
-                      {otherParticipant.name.charAt(0).toUpperCase()}
-                    </Avatar>
-                    <div style={{ flex: 1, overflow: "hidden" }}>
-                      <Text size="sm" fw={500} truncate>{otherParticipant.name}</Text>
-                      <Text size="xs" c="dimmed" truncate>Click to view chat</Text>
-                    </div>
-                  </Group>
+                  <CardActionArea
+                    onClick={() => setActiveConversation(conv)}
+                    sx={{ p: 1.5 }}
+                  >
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                      <Avatar sx={{ bgcolor: "#1976d2" }}>
+                        {otherParticipant.name.charAt(0).toUpperCase()}
+                      </Avatar>
+                      <div style={{ flex: 1, overflow: "hidden" }}>
+                        <Typography variant="body2" fontWeight={500} noWrap>
+                          {otherParticipant.name}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary" noWrap>
+                          Click to view chat
+                        </Typography>
+                      </div>
+                    </Box>
+                  </CardActionArea>
                 </Card>
               );
             })
           )}
         </Stack>
-      </ScrollArea>
+      </Box>
     </div>
   );
 }

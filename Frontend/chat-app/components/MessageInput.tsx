@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { useChat } from "../context/ChatContext";
 import { sendMessage } from "../services/messageService";
-import { TextInput, ActionIcon, Group } from "@mantine/core";
-import { IconSend } from "@tabler/icons-react";
+import { TextField, IconButton, Box } from "@mui/material";
+import SendIcon from "@mui/icons-material/Send";
 
 type MessageInputProps = {
   onMessageSent?: (message: any) => void;
@@ -44,29 +44,32 @@ export default function MessageInput({ onMessageSent }: MessageInputProps) {
   };
 
   return (
-    <Group p="md" style={{ borderTop: "1px solid #eee", backgroundColor: "white" }}>
-      <TextInput
+    <Box sx={{ display: "flex", alignItems: "center", gap: 1, p: 2, borderTop: "1px solid #eee", backgroundColor: "white" }}>
+      <TextField
         placeholder="Type a message..."
         value={message}
-        onChange={(e) => setMessage(e.currentTarget.value)}
+        onChange={(e) => setMessage(e.target.value)}
         onKeyDown={handleKeyDown}
-        style={{ flex: 1 }}
-        size="md"
-        radius="xl"
-        rightSection={
-          <ActionIcon 
-            size={32} 
-            radius="xl" 
-            color="blue" 
-            variant="filled" 
-            onClick={handleSend}
-            disabled={!message.trim()}
-          >
-            <IconSend size="1.1rem" stroke={1.5} />
-          </ActionIcon>
-        }
-        rightSectionWidth={42}
+        sx={{ flex: 1 }}
+        size="small"
+        fullWidth
+        InputProps={{
+          sx: { borderRadius: 6 }
+        }}
       />
-    </Group>
+      <IconButton 
+        color="primary"
+        onClick={handleSend}
+        disabled={!message.trim()}
+        sx={{ 
+          bgcolor: "#1976d2", 
+          color: "white",
+          "&:hover": { bgcolor: "#1565c0" },
+          "&.Mui-disabled": { bgcolor: "#e0e0e0", color: "#9e9e9e" }
+        }}
+      >
+        <SendIcon fontSize="small" />
+      </IconButton>
+    </Box>
   );
 }

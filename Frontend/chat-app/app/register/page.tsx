@@ -5,7 +5,16 @@ import { useAuth } from "../../context/AuthContext";
 import { useRouter } from "next/navigation";
 import CommonLink from "../../components/CommonLink";
 
-import { TextInput, PasswordInput, Button, Paper, Title, Stack, Text, Alert } from "@mantine/core";
+import {
+  TextField,
+  Button,
+  Paper,
+  Typography,
+  Stack,
+  Alert,
+  AlertTitle,
+  CircularProgress,
+} from "@mui/material";
 
 export default function RegisterPage() {
   const { register } = useAuth();
@@ -43,7 +52,6 @@ export default function RegisterPage() {
       router.push("/chat");
     } catch (err: any) {
       console.error("Registration failed", err);
-      // Try to extract error message from API response
       const errorMessage = err.response?.data?.message || err.message || "Registration failed. Please try again.";
       setError(errorMessage);
     } finally {
@@ -53,63 +61,76 @@ export default function RegisterPage() {
 
   return (
     <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
-      <Paper shadow="md" p="xl" w={400}>
-        <Stack gap="md">
-          <Title order={3} ta="center">Create an Account</Title>
+      <Paper elevation={3} sx={{ p: 4, width: 400 }}>
+        <Stack spacing={2}>
+          <Typography variant="h5" align="center">Create an Account</Typography>
           
           {error && (
-            <Alert color="red" title="Error">
+            <Alert severity="error">
+              <AlertTitle>Error</AlertTitle>
               {error}
             </Alert>
           )}
 
-          <TextInput
+          <TextField
             label="Name"
             placeholder="Enter your name"
             value={name}
-            onChange={(e) => setName(e.currentTarget.value)}
+            onChange={(e) => setName(e.target.value)}
             required
             disabled={loading}
+            fullWidth
           />
 
-          <TextInput
+          <TextField
             label="Email"
             placeholder="Enter your email"
             value={email}
-            onChange={(e) => setEmail(e.currentTarget.value)}
+            onChange={(e) => setEmail(e.target.value)}
             required
             disabled={loading}
             type="email"
+            fullWidth
           />
 
-          <PasswordInput
+          <TextField
             label="Password"
             placeholder="Create a password"
             value={password}
-            onChange={(e) => setPassword(e.currentTarget.value)}
+            onChange={(e) => setPassword(e.target.value)}
             required
             disabled={loading}
+            type="password"
+            fullWidth
           />
 
-          <PasswordInput
+          <TextField
             label="Confirm Password"
             placeholder="Confirm your password"
             value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.currentTarget.value)}
+            onChange={(e) => setConfirmPassword(e.target.value)}
             required
             disabled={loading}
+            type="password"
+            fullWidth
           />
 
-          <Button mt="md" onClick={handleRegister} loading={loading} fullWidth>
-            Register
+          <Button
+            variant="contained"
+            onClick={handleRegister}
+            disabled={loading}
+            fullWidth
+            sx={{ mt: 1 }}
+          >
+            {loading ? <CircularProgress size={24} color="inherit" /> : "Register"}
           </Button>
 
-          <Text size="sm" ta="center" mt="sm">
+          <Typography variant="body2" align="center" sx={{ mt: 1 }}>
             Already have an account?{" "}
-            <CommonLink href="/login" style={{ textDecoration: "none", color: "blue" }}>
+            <CommonLink href="/login" style={{ textDecoration: "none", color: "#1976d2" }}>
               Login here
             </CommonLink>
-          </Text>
+          </Typography>
         </Stack>
       </Paper>
     </div>

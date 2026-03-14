@@ -7,7 +7,7 @@ import { getMessages } from "../services/messageService";
 import MessageInput from "./MessageInput";
 import { jwtDecode } from "jwt-decode";
 
-import { ScrollArea, Stack, Card, Text, Center, Title, Paper } from "@mantine/core";
+import { Stack, Typography, Paper, Box } from "@mui/material";
 import { getSocket } from "../socket/socket";
 
 type Message = {
@@ -65,25 +65,33 @@ export default function ChatWindow() {
 
   if (!activeConversation) {
     return (
-      <Center
-        style={{
+      <Box
+        sx={{
           flex: 1,
           height: "100vh",
-          backgroundColor: "#f8f9fa"
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: "#f8f9fa",
         }}
       >
-        <Paper p="xl" radius="md" ta="center" style={{ backgroundColor: "transparent" }}>
-          <Title order={3} c="dimmed">Welcome to Messaging</Title>
-          <Text c="dimmed" mt="sm">Select a conversation from the sidebar or click "New Chat" to start.</Text>
+        <Paper elevation={0} sx={{ p: 4, textAlign: "center", backgroundColor: "transparent" }}>
+          <Typography variant="h5" color="text.secondary">Welcome to Messaging</Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+            Select a conversation from the sidebar or click &quot;New Chat&quot; to start.
+          </Typography>
         </Paper>
-      </Center>
+      </Box>
     );
   }
 
   return (
     <div style={{ flex: 1, height: "100vh", display: "flex", flexDirection: "column", backgroundColor: "#f8f9fa" }}>
-      <ScrollArea key={activeConversation?._id} style={{ flex: 1 }}>
-        <Stack p="md" gap="md">
+      <Box
+        key={activeConversation?._id}
+        sx={{ flex: 1, overflowY: "auto", p: 2 }}
+      >
+        <Stack spacing={2}>
           {messages.map((msg) => {
             const isMe = msg.sender === currentUserId;
             
@@ -99,7 +107,7 @@ export default function ChatWindow() {
                 <div 
                   style={{ 
                     maxWidth: "70%", 
-                    backgroundColor: isMe ? "#228be6" : "#ffffff", 
+                    backgroundColor: isMe ? "#1976d2" : "#ffffff", 
                     color: isMe ? "white" : "black",
                     padding: "10px 14px",
                     borderRadius: "16px",
@@ -108,11 +116,20 @@ export default function ChatWindow() {
                     boxShadow: "0 1px 2px rgba(0,0,0,0.1)"
                   }}
                 >
-                  <Text size="sm">{msg.content}</Text>
+                  <Typography variant="body2">{msg.content}</Typography>
                   {msg.createdAt && (
-                    <Text size="10px" c={isMe ? "#e0e0e0" : "dimmed"} ta="right" mt={4}>
+                    <Typography 
+                      variant="caption" 
+                      sx={{ 
+                        display: "block",
+                        textAlign: "right", 
+                        mt: 0.5, 
+                        color: isMe ? "#e0e0e0" : "text.secondary",
+                        fontSize: "10px"
+                      }}
+                    >
                       {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </Text>
+                    </Typography>
                   )}
                 </div>
               </div>
@@ -120,7 +137,7 @@ export default function ChatWindow() {
           })}
           <div ref={bottomRef} />
         </Stack>
-      </ScrollArea>
+      </Box>
 
       <MessageInput onMessageSent={(msg: Message) => setMessages((prev) => [...prev, msg])} />
     </div>

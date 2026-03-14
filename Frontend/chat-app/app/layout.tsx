@@ -1,6 +1,17 @@
+"use client";
+
 import { AuthProvider } from "../context/AuthContext";
 import { ChatProvider } from "../context/ChatContext";
-import { MantineProvider } from "@mantine/core";
+import { ThemeProvider, createTheme, CssBaseline } from "@mui/material";
+
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: "#1976d2",
+    },
+  },
+});
+
 export default function RootLayout({
   children,
 }: {
@@ -8,14 +19,15 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>
-         <MantineProvider>
+      <body style={{ margin: 0 }}>
+        <ThemeProvider theme={theme}>
+          <CssBaseline />
           <AuthProvider>
             <ChatProvider>
               {children}
             </ChatProvider>
           </AuthProvider>
-         </MantineProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -2,7 +2,7 @@
 
 import { useAuth } from "../context/AuthContext";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export default function ProtectedRoute({
   children,
@@ -11,14 +11,20 @@ export default function ProtectedRoute({
 }) {
   const { token } = useAuth();
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    if (!token) {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (mounted && !token) {
       router.push("/login");
     }
-  }, [token, router]);
+  }, [token, router, mounted]);
 
-  if (!token) return null;
+  // Don't render anything until mounted on client to avoid hydration mismatch
+  if (!mounted || !token) return null;
 
   return <>{children}</>;
 }
