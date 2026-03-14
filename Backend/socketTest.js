@@ -1,7 +1,8 @@
 const { io } = require("socket.io-client");
 
 // connect to backend socket server
-const socket = io("http://localhost:5000");
+// const socket = io("http://localhost:5000");
+const socket = io(process.env.NEXT_PUBLIC_BACKEND_URL);
 
 socket.on("connect", () => {
   console.log("Connected to socket server:", socket.id);
