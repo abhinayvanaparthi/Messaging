@@ -2,13 +2,30 @@ const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 // Signup
 exports.registerUser = async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
+    // Input validation
+    if (!name || typeof name !== "string" || name.trim().length < 2 || name.trim().length > 100) {
+      return res.status(400).json({ message: "Name must be between 2 and 100 characters" });
+    }
+
+    if (!email || typeof email !== "string" || !EMAIL_REGEX.test(email.trim())) {
+      return res.status(400).json({ message: "A valid email address is required" });
+    }
+
+    if (!password || typeof password !== "string" || password.length < 6) {
+      return res.status(400).json({ message: "Password must be at least 6 characters long" });
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+
     // Check if user exists
-    const userExists = await User.findOne({ email });
+    const userExists = await User.findOne({ email: normalizedEmail });
     if (userExists) {
       return res.status(400).json({ message: "User already exists" });
     }
@@ -19,13 +36,18 @@ exports.registerUser = async (req, res) => {
 
     // Create user
     const user = await User.create({
-      name,
-      email,
+      name: name.trim(),
+      email: normalizedEmail,
       password: hashedPassword,
     });
 
+    if (!process.env.JWT_SECRET) {
+      console.error("JWT_SECRET is not configured");
+      return res.status(500).json({ message: "Server configuration error" });
+    }
+
     // Generate token
-    const token = jwt.sign({ id: user._id }, "secretkey", {
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
       expiresIn: "7d",
     });
 
@@ -43,8 +65,15 @@ exports.loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    // Input validation
+    if (!email || typeof email !== "string" || !password || typeof password !== "string") {
+      return res.status(400).json({ message: "Email and password are required" });
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+
     // Check user
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email: normalizedEmail });
     if (!user) {
       return res.status(400).json({ message: "Invalid credentials" });
     }
@@ -55,8 +84,13 @@ exports.loginUser = async (req, res) => {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
+    if (!process.env.JWT_SECRET) {
+      console.error("JWT_SECRET is not configured");
+      return res.status(500).json({ message: "Server configuration error" });
+    }
+
     // Generate token
-    const token = jwt.sign({ id: user._id }, "secretkey", {
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
       expiresIn: "7d",
     });
 

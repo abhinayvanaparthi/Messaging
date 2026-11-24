@@ -1,15 +1,31 @@
 const { io } = require("socket.io-client");
 
-// connect to backend socket server
-// const socket = io("http://localhost:5000");
-const socket = io(process.env.NEXT_PUBLIC_BACKEND_URL);
+const backendUrl =
+  process.env.BACKEND_URL ||
+  process.env.NEXT_PUBLIC_BACKEND_URL ||
+  "http://localhost:5000";
+
+const token = process.argv[2] || process.env.TEST_JWT_TOKEN;
+
+if (!token) {
+  console.log("Usage: node socketTest.js <jwt_token>");
+  process.exit(1);
+}
+
+const socket = io(backendUrl, {
+  transports: ["websocket"],
+  auth: {
+    token,
+  },
+});
 
 socket.on("connect", () => {
   console.log("Connected to socket server:", socket.id);
+  socket.emit("join");
+});
 
-  // simulate logged-in user
-  const userId = process.argv[2]; // pass userId from terminal
-  socket.emit("join", userId);
+socket.on("connect_error", (err) => {
+  console.error("Socket connection error:", err.message);
 });
 
 // listen for real-time messages

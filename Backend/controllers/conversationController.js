@@ -1,23 +1,41 @@
 const Conversation = require("../models/Conversation");
 const Message = require("../models/Message");
 
+// Helper to check participant
+const isParticipant = (conversation, userId) => {
+  if (!conversation || !conversation.participants) return false;
+  return conversation.participants.some((p) => p.toString() === userId.toString());
+};
+
 // Create or get conversation
 exports.createOrGetConversation = async (req, res) => {
   try {
     const { userId } = req.body; // the person you want to chat with
-
     const currentUser = req.user.id;
+
+    if (!userId || typeof userId !== "string") {
+      return res.status(400).json({ message: "userId is required" });
+    }
+
+    if (userId.toString() === currentUser.toString()) {
+      return res.status(400).json({ message: "Cannot create conversation with yourself" });
+    }
 
     // Check if conversation already exists
     let conversation = await Conversation.findOne({
+      isGroup: { $ne: true },
       participants: { $all: [currentUser, userId] },
-    });
+    }).populate("participants", "name email");
 
     // If not, create new
     if (!conversation) {
       conversation = await Conversation.create({
         participants: [currentUser, userId],
       });
+      conversation = await Conversation.findById(conversation._id).populate(
+        "participants",
+        "name email"
+      );
     }
 
     res.json(conversation);
@@ -163,10 +181,19 @@ exports.leaveGroup = async (req, res) => {
       return res.status(404).json({ message: "Group not found" });
     }
 
+    if (!isParticipant(conversation, userId)) {
+      return res.status(403).json({ message: "You are not a participant in this group" });
+    }
+
     // remove user from participants
     conversation.participants = conversation.participants.filter(
       (participant) => participant.toString() !== userId
     );
+
+    // If admin leaves, transfer admin to another participant if available
+    if (conversation.groupAdmin.toString() === userId && conversation.participants.length > 0) {
+      conversation.groupAdmin = conversation.participants[0];
+    }
 
     await conversation.save();
 

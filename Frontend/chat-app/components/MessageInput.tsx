@@ -16,14 +16,8 @@ export default function MessageInput({ onMessageSent }: MessageInputProps) {
 
   const handleSend = async () => {
     if (!message || !activeConversation) {
-      console.error("Cannot send: missing message or conversation", { 
-        hasMessage: !!message, 
-        activeConversation 
-      });
       return;
     }
-
-    console.log("Sending message to conversation:", activeConversation._id);
 
     try {
       const sentMessage = await sendMessage(activeConversation._id, message);

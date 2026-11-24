@@ -1,23 +1,29 @@
-# node_modules
-# .env
-
-# dependencies
+# Dependencies
 node_modules/
 
-# env files
-.env
+# Environment files
+.env*
+!.env.example
+*.local
 
-# logs
+# Logs
 *.log
+logs/
 
-# build outputs
-dist/
+# Build and output directories
+.next/
+out/
 build/
+dist/
+coverage/
 
-# OS
+# Uploaded files
+uploads/
+
+# OS metadata
 .DS_Store
 Thumbs.db
 
-# editors
+# IDE and editors
 .vscode/
 .idea/

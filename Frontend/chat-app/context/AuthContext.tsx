@@ -24,7 +24,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (token) {
       try {
         const decoded: { id: string } = jwtDecode(token);
-        connectSocket(decoded.id);
+        connectSocket(decoded.id, token);
       } catch (e) {
         console.error("Failed to decode token on load", e);
       }
@@ -39,7 +39,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const decoded: { id: string } = jwtDecode(data.token);
 
-    connectSocket(decoded.id);
+    connectSocket(decoded.id, data.token);
   };
 
   const register = async (name: string, email: string, password: string) => {

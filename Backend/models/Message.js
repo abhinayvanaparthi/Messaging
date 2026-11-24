@@ -17,7 +17,7 @@ const messageSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    contentsearch: {
+    contentSearch: {
       type: String
     },
     status: {

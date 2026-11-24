@@ -10,4 +10,17 @@ const apiLimiter = rateLimit({
   legacyHeaders: false
 });
 
-module.exports = apiLimiter;
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 20, // max 20 requests per IP to protect auth routes from brute force
+  message: {
+    message: "Too many authentication attempts, please try again later."
+  },
+  standardHeaders: true,
+  legacyHeaders: false
+});
+
+module.exports = {
+  apiLimiter,
+  authLimiter
+};
