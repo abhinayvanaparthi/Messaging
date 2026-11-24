@@ -13,6 +13,7 @@ import {
   Typography,
   Button,
   Avatar,
+  Badge,
 } from "@mui/material";
 import CommonLink from "./CommonLink";
 
@@ -29,7 +30,7 @@ type Conversation = {
 
 export default function ConversationSidebar() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
-  const { setActiveConversation } = useChat();
+  const { setActiveConversation, isUserOnline } = useChat();
   const { token } = useAuth();
 
   const currentUserId = token ? (jwtDecode(token) as { id: string }).id : null;
@@ -69,7 +70,9 @@ export default function ConversationSidebar() {
               // Filter out the current user and show the other participant
               const otherParticipant = conv.participants.find(
                 (p) => p._id !== currentUserId
-              ) || conv.participants[0] || { name: "Unknown" };
+              ) || conv.participants[0] || { _id: "", name: "Unknown", email: "" };
+
+              const isOnline = Boolean(otherParticipant._id && isUserOnline(otherParticipant._id));
 
               return (
                 <Card
@@ -82,9 +85,25 @@ export default function ConversationSidebar() {
                     sx={{ p: 1.5 }}
                   >
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-                      <Avatar sx={{ bgcolor: "#1976d2" }}>
-                        {otherParticipant.name.charAt(0).toUpperCase()}
-                      </Avatar>
+                      <Badge
+                        overlap="circular"
+                        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+                        variant="dot"
+                        sx={{
+                          "& .MuiBadge-badge": {
+                            backgroundColor: isOnline ? "#44b700" : "#bdbdbd",
+                            color: isOnline ? "#44b700" : "#bdbdbd",
+                            boxShadow: "0 0 0 2px #fff",
+                            width: 10,
+                            height: 10,
+                            borderRadius: "50%",
+                          },
+                        }}
+                      >
+                        <Avatar sx={{ bgcolor: "#1976d2" }}>
+                          {otherParticipant.name.charAt(0).toUpperCase()}
+                        </Avatar>
+                      </Badge>
                       <div style={{ flex: 1, overflow: "hidden" }}>
                         <Typography variant="body2" fontWeight={500} noWrap>
                           {otherParticipant.name}

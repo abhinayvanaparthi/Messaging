@@ -3,13 +3,12 @@
 import { useEffect, useState, useRef } from "react";
 import { useChat } from "../context/ChatContext";
 import { useAuth } from "../context/AuthContext";
-import { getMessages, deleteMessage, reactToMessage } from "../services/messageService";
+import { getMessages, deleteMessage } from "../services/messageService";
 import MessageInput from "./MessageInput";
 import { jwtDecode } from "jwt-decode";
-import { TextField, IconButton } from "@mui/material";
+import { TextField, IconButton, Stack, Typography, Paper, Box, Avatar, Badge } from "@mui/material";
 import CheckIcon from "@mui/icons-material/Check";
 import CloseIcon from "@mui/icons-material/Close";
-import { Stack, Typography, Paper, Box } from "@mui/material";
 import { getSocket } from "../socket/socket";
 type Message = {
   _id: string;
@@ -26,7 +25,7 @@ type ContextMenu = {
 };
 
 export default function ChatWindow() {
-  const { activeConversation } = useChat();
+  const { activeConversation, isUserOnline } = useChat();
   const { token } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
   const bottomRef = useRef<HTMLDivElement | null>(null);
@@ -190,6 +189,15 @@ export default function ChatWindow() {
     }
   };
 
+  // Identify other participant for 1-on-1 chats, excluding current user
+  const otherParticipant = activeConversation?.participants?.find(
+    (p) => p._id !== currentUserId
+  );
+  const isOtherOnline = otherParticipant ? isUserOnline(otherParticipant._id) : false;
+  const displayName = activeConversation?.isGroup
+    ? activeConversation.groupName || "Group Chat"
+    : otherParticipant?.name || "Conversation";
+
   if (!activeConversation) {
     return (
       <Box
@@ -214,6 +222,56 @@ export default function ChatWindow() {
 
   return (
     <div style={{ flex: 1, height: "100vh", display: "flex", flexDirection: "column", backgroundColor: "#f8f9fa" }}>
+      {/* Chat Header with real-time online status */}
+      <Box
+        sx={{
+          px: 2.5,
+          py: 1.5,
+          backgroundColor: "#ffffff",
+          borderBottom: "1px solid #eee",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          zIndex: 1,
+        }}
+      >
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+          <Badge
+            overlap="circular"
+            anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+            variant="dot"
+            sx={{
+              "& .MuiBadge-badge": {
+                backgroundColor: isOtherOnline ? "#44b700" : "#bdbdbd",
+                color: isOtherOnline ? "#44b700" : "#bdbdbd",
+                boxShadow: "0 0 0 2px #fff",
+                width: 10,
+                height: 10,
+                borderRadius: "50%",
+              },
+            }}
+          >
+            <Avatar sx={{ bgcolor: "#1976d2", width: 40, height: 40 }}>
+              {displayName.charAt(0).toUpperCase()}
+            </Avatar>
+          </Badge>
+          <Box>
+            <Typography variant="subtitle1" fontWeight={600} lineHeight={1.2}>
+              {displayName}
+            </Typography>
+            <Typography
+              variant="caption"
+              sx={{
+                color: isOtherOnline ? "#2e7d32" : "text.secondary",
+                fontWeight: 500,
+              }}
+            >
+              {isOtherOnline ? "Online" : "Offline"}
+            </Typography>
+          </Box>
+        </Box>
+      </Box>
+
       <Box
         key={activeConversation?._id}
         sx={{ flex: 1, overflowY: "auto", p: 2 }}

@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { loginUser, registerUser } from "../services/authService";
-import { connectSocket } from "../socket/socket";
+import { connectSocket, disconnectSocket } from "../socket/socket";
 import { jwtDecode } from "jwt-decode";
 
 type AuthContextType = {
@@ -51,6 +51,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = () => {
     localStorage.removeItem("token");
     setToken(null);
+    disconnectSocket();
   };
 
   return (
