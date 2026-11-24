@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { getConversations } from "../services/conversationService";
 import { useChat } from "../context/ChatContext";
 import { useAuth } from "../context/AuthContext";
+import { getSocket } from "../socket/socket";
 import { jwtDecode } from "jwt-decode";
 import {
   Box,
@@ -23,9 +24,17 @@ type User = {
   email: string;
 };
 
+type SocketMessagePayload = {
+  conversation: string | { _id: string };
+  content?: string;
+  fileUrl?: string;
+};
+
 type Conversation = {
   _id: string;
   participants: User[];
+  lastMessage?: string;
+  updatedAt?: string;
 };
 
 export default function ConversationSidebar() {
@@ -46,6 +55,40 @@ export default function ConversationSidebar() {
     };
 
     fetchConversations();
+
+    const socket = getSocket();
+    if (!socket) return;
+
+    const handleNewMessage = (newMsg: SocketMessagePayload) => {
+      setConversations((prev) => {
+        const convId =
+          typeof newMsg.conversation === "object"
+            ? newMsg.conversation._id
+            : newMsg.conversation;
+
+        const targetIndex = prev.findIndex((c) => c._id === convId);
+        if (targetIndex === -1) {
+          fetchConversations();
+          return prev;
+        }
+
+        const updatedConv: Conversation = {
+          ...prev[targetIndex],
+          lastMessage: newMsg.fileUrl ? "[File Attachment]" : newMsg.content,
+        };
+
+        return [
+          updatedConv,
+          ...prev.slice(0, targetIndex),
+          ...prev.slice(targetIndex + 1),
+        ];
+      });
+    };
+
+    socket.on("newMessage", handleNewMessage);
+    return () => {
+      socket.off("newMessage", handleNewMessage);
+    };
   }, []);
 
   return (
@@ -108,8 +151,17 @@ export default function ConversationSidebar() {
                         <Typography variant="body2" fontWeight={500} noWrap>
                           {otherParticipant.name}
                         </Typography>
-                        <Typography variant="caption" color="text.secondary" noWrap>
-                          Click to view chat
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          noWrap
+                          sx={{ display: "block" }}
+                        >
+                          {conv.lastMessage === "[File Attachment]"
+                            ? "📎 Attachment"
+                            : conv.lastMessage
+                            ? conv.lastMessage
+                            : "Click to view chat"}
                         </Typography>
                       </div>
                     </Box>

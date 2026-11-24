@@ -10,11 +10,14 @@ import { TextField, IconButton, Stack, Typography, Paper, Box, Avatar, Badge } f
 import CheckIcon from "@mui/icons-material/Check";
 import CloseIcon from "@mui/icons-material/Close";
 import { getSocket } from "../socket/socket";
+import FileAttachment from "./FileAttachment";
 type Message = {
   _id: string;
   content: string;
   sender: string;
   conversation?: string;
+  fileUrl?: string;
+  fileType?: string;
   createdAt?: string;
 };
 type ContextMenu = {
@@ -331,7 +334,7 @@ export default function ChatWindow() {
                     maxWidth: "70%", 
                     backgroundColor: isMe ? "#1976d2" : "#ffffff", 
                     color: isMe ? "white" : "black",
-                    padding: "10px 14px",
+                    padding: msg.fileUrl ? "8px 10px" : "10px 14px",
                     borderRadius: "16px",
                     borderBottomRightRadius: isMe ? "4px" : "16px",
                     borderBottomLeftRadius: isMe ? "16px" : "4px",
@@ -339,7 +342,18 @@ export default function ChatWindow() {
                     cursor:isMe?"context-menu":"default",
                   }}
                 >
-                  <Typography variant="body2">{msg.content}</Typography>
+                  {msg.fileUrl && (
+                    <Box sx={{ mb: msg.content && msg.content !== "[File Attachment]" ? 1 : 0 }}>
+                      <FileAttachment
+                        fileUrl={msg.fileUrl}
+                        fileType={msg.fileType}
+                        isMe={isMe}
+                      />
+                    </Box>
+                  )}
+                  {(!msg.fileUrl || (msg.content && msg.content !== "[File Attachment]")) && (
+                    <Typography variant="body2">{msg.content}</Typography>
+                  )}
                   {msg.createdAt && (
                     <Typography 
                       variant="caption" 
@@ -378,23 +392,35 @@ export default function ChatWindow() {
             overflow: "hidden", // keeps rounded corners clean
           }}
         >
-          {/* Edit option */}
-          <Box
-            onClick={handleEditClick}
-            sx={{
-              px: 2, py: 1.2,
-              cursor: "pointer",
-              fontSize: 14,
-              color: "#1976d2",
-              fontWeight: 500,
-              "&:hover": { backgroundColor: "#f0f7ff" },
-            }}
-          >
-            ✏️ Edit Message
-          </Box>
+          {/* Edit option (only for text messages) */}
+          {(() => {
+            const targetMsg = messages.find((m) => m._id === contextMenu.messageId);
+            const isPureFile = Boolean(
+              targetMsg?.fileUrl &&
+                (!targetMsg.content || targetMsg.content === "[File Attachment]")
+            );
+            if (isPureFile) return null;
 
-          {/* Divider between options */}
-          <Box sx={{ height: "1px", backgroundColor: "#f0f0f0" }} />
+            return (
+              <>
+                <Box
+                  onClick={handleEditClick}
+                  sx={{
+                    px: 2,
+                    py: 1.2,
+                    cursor: "pointer",
+                    fontSize: 14,
+                    color: "#1976d2",
+                    fontWeight: 500,
+                    "&:hover": { backgroundColor: "#f0f7ff" },
+                  }}
+                >
+                  ✏️ Edit Message
+                </Box>
+                <Box sx={{ height: "1px", backgroundColor: "#f0f0f0" }} />
+              </>
+            );
+          })()}
 
           {/* Delete option */}
           <Box
