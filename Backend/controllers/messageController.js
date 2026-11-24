@@ -61,15 +61,20 @@ exports.sendMessage = async (req, res) => {
     if (io) {
       io.to(conversationId).emit("newMessage", responseMessage);
 
-      // Also deliver to individual participant sockets if connected
+      // Also deliver to individual participant sockets if connected and not already in room
       let delivered = false;
+      const roomSockets = io.sockets.adapter.rooms?.get(conversationId);
+
       conversation.participants.forEach((p) => {
         const pId = p.toString();
         if (pId !== sender) {
           const socketId = onlineUsers ? onlineUsers.get(pId) : null;
           if (socketId) {
-            io.to(socketId).emit("newMessage", responseMessage);
             delivered = true;
+            // Avoid duplicate delivery if recipient socket is already subscribed to the conversation room
+            if (!roomSockets || !roomSockets.has(socketId)) {
+              io.to(socketId).emit("newMessage", responseMessage);
+            }
           }
         }
       });

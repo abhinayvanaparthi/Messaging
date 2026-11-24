@@ -15,8 +15,8 @@ type Message = {
   _id: string;
   content: string;
   sender: string;
+  conversation?: string;
   createdAt?: string;
-  
 };
 type ContextMenu = {
   visible: boolean;
@@ -85,7 +85,12 @@ export default function ChatWindow() {
     if (!socket) return;
 
     socket.on("newMessage", (message: Message) => {
-      setMessages((prev) => [...prev, message]);
+      setMessages((prev) => {
+        if (prev.some((msg) => msg._id === message._id)) {
+          return prev;
+        }
+        return [...prev, message];
+      });
     });
 
     socket.on("messageEdited", (updatedMessage: Message) => {
@@ -350,7 +355,16 @@ export default function ChatWindow() {
         </Box>
       )}
 
-      <MessageInput onMessageSent={(msg: Message) => setMessages((prev) => [...prev, msg])} />
+      <MessageInput
+        onMessageSent={(msg: Message) =>
+          setMessages((prev) => {
+            if (prev.some((m) => m._id === msg._id)) {
+              return prev;
+            }
+            return [...prev, msg];
+          })
+        }
+      />
     </div>
   );
 }

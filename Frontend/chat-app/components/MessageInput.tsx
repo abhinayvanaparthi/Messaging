@@ -13,25 +13,30 @@ type MessageInputProps = {
 export default function MessageInput({ onMessageSent }: MessageInputProps) {
   const { activeConversation } = useChat();
   const [message, setMessage] = useState("");
+  const [sending, setSending] = useState(false);
 
   const handleSend = async () => {
-    if (!message || !activeConversation) {
+    const trimmed = message.trim();
+    if (!trimmed || !activeConversation || sending) {
       return;
     }
 
     try {
-      const sentMessage = await sendMessage(activeConversation._id, message);
+      setSending(true);
+      const sentMessage = await sendMessage(activeConversation._id, trimmed);
       setMessage("");
       if (onMessageSent) {
         onMessageSent(sentMessage);
       }
     } catch (error: any) {
       console.error("Error sending message:", error.response?.data || error.message);
+    } finally {
+      setSending(false);
     }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
+    if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSend();
     }
@@ -47,6 +52,7 @@ export default function MessageInput({ onMessageSent }: MessageInputProps) {
         sx={{ flex: 1 }}
         size="small"
         fullWidth
+        disabled={sending}
         InputProps={{
           sx: { borderRadius: 6 }
         }}
@@ -54,7 +60,7 @@ export default function MessageInput({ onMessageSent }: MessageInputProps) {
       <IconButton 
         color="primary"
         onClick={handleSend}
-        disabled={!message.trim()}
+        disabled={!message.trim() || sending}
         sx={{ 
           bgcolor: "#1976d2", 
           color: "white",
